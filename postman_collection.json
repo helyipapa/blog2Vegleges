@@ -1,0 +1,294 @@
+{
+  "info": {
+    "_postman_id": "b3d9b2f2-1111-2222-3333-444444444444",
+    "name": "Blog2 API - Postman Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Demo collection for Blog2 API (Users, Posts, Comments). Update the collection variable `baseUrl` to match your local setup."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "lastUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "lastPostId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "lastCommentId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Group: Authentication (register, login, logout)",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman Reg\",\n  \"email\": \"pm.reg+{{Math.floor(Math.random()*1000)}}@example.hu\",\n  \"password\": \"password\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/register", "host": ["{{baseUrl}}"], "path": ["api","register"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 or 200', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "var json = pm.response.json();",
+                  "if (json.id) { pm.collectionVariables.set('lastUserId', json.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"teszt.user@example.hu\",\n  \"password\": \"password\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/login", "host": ["{{baseUrl}}"], "path": ["api","login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "// Try common token fields: access_token, token, token.access_token",
+                  "var token = json.access_token || json.token || (json.data && json.data.access_token) || (json.data && json.data.token) || null;",
+                  "pm.test('Token is present', function () { pm.expect(!!token).to.be.true; });",
+                  "if (token) { pm.collectionVariables.set('authToken', token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/logout", "host": ["{{baseUrl}}"], "path": ["api","logout"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 204', function () { pm.expect(pm.response.code).to.be.oneOf([200,204]); });",
+                  "pm.collectionVariables.unset('authToken');",
+                  "pm.test('authToken cleared', function () { pm.expect(pm.collectionVariables.get('authToken')).to.be.oneOf(['', null]); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "Group: Users endpoints",
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","users"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is an array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get user (use {{lastUserId}})",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{lastUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","users","{{lastUserId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Has id field', function () { var json = pm.response.json(); pm.expect(json.id).to.exist; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Teszt Felhasználó\",\n  \"email\": \"teszt.user+{{Math.floor(Math.random()*1000)}}@example.hu\",\n  \"password\": \"password\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","users"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Response has id', function () { pm.expect(json.id).to.be.a('number'); });",
+                  "if (json.id) { pm.collectionVariables.set('lastUserId', json.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "description": "Group: Posts endpoints",
+      "item": [
+        {
+          "name": "List posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/posts", "host": ["{{baseUrl}}"], "path": ["api","posts"] }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });","pm.test('Array response', function () { pm.expect(pm.response.json()).to.be.an('array'); });"], "type": "text/javascript" } }
+          ]
+        },
+        {
+          "name": "Get post (use {{lastPostId}})",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/posts/{{lastPostId}}", "host": ["{{baseUrl}}"], "path": ["api","posts","{{lastPostId}}"] } },
+          "event": [ { "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });","pm.test('Has title', function () { var json = pm.response.json(); pm.expect(json.title).to.exist; });"], "type": "text/javascript" } } ]
+        },
+        {
+          "name": "Create post",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{lastUserId}},\n  \"title\": \"Új poszt a Postmanből\",\n  \"content\": \"Ez a poszt automatikusan létrehozva a Postman gyűjteményből.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/posts", "host": ["{{baseUrl}}"], "path": ["api","posts"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Has id', function () { pm.expect(json.id).to.be.a('number'); });",
+                  "if (json.id) { pm.collectionVariables.set('lastPostId', json.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "description": "Group: Comments endpoints",
+      "item": [
+        {
+          "name": "List comments",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/comments", "host": ["{{baseUrl}}"], "path": ["api","comments"] } },
+          "event": [ { "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });","pm.test('Array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"], "type": "text/javascript" } } ]
+        },
+        {
+          "name": "Get comment (use {{lastCommentId}})",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/comments/{{lastCommentId}}", "host": ["{{baseUrl}}"], "path": ["api","comments","{{lastCommentId}}"] } },
+          "event": [ { "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } } ]
+        },
+        {
+          "name": "Create comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": {{lastUserId}},\n  \"post_id\": {{lastPostId}},\n  \"content\": \"Teszt hozzászólás a Postmanből\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/comments", "host": ["{{baseUrl}}"], "path": ["api","comments"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Has id', function () { pm.expect(json.id).to.be.a('number'); });",
+                  "if (json.id) { pm.collectionVariables.set('lastCommentId', json.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
