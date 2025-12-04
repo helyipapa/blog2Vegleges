@@ -143,16 +143,3 @@ php artisan migrate
 
 - A projekt demo jellegű: nincsenek részletes jogosultságok vagy rate limiting beállítva.
 - Éles környezetben használj HTTPS-t, erősebb jelszókövetelményeket, input validációt, rate limiting-et, és ügyelj a titkos környezeti változók (DB jelszó) biztonságára.
-
-Ha szeretnéd, elvégzem helyetted a migrációk lefuttatását és a seed betöltését — indítsd el a MySQL szolgáltatást és mondd, hogy futtassam a `php artisan migrate --seed` parancsot. Ha tovább segítsek a personal_access_tokens hibával kapcsolatban, add meg, melyik fájlt szeretnéd megtartani/törölni és megnézem a jelenlegi migrációk állapotát.
-
----
-
-Fájlok a projektben, amelyekre érdemes figyelni:
-- `routes/api.php` — API útvonalak (users, posts, comments, auth)
-- `app/Http/Controllers/Api/AuthController.php` — register/login/logout
-- `app/Http/Controllers/Api/PostController.php`, `CommentController.php`, `UserController.php`
-- `app/Models/Post.php`, `app/Models/Comment.php`, `app/Models/User.php` (User most már HasApiTokens)
-- `database/migrations/` — itt találod a migrációs fájlokat
-- `database/seeders/BlogSeeder.php` — a minták beszúrásához
-- `postman_collection.json` — importáld Postman-be a gyors teszthez
