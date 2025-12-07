@@ -519,21 +519,3 @@ Importálható Postman gyűjtemény az összes végponttal és példa kérésekk
 4. Az összes végpont készen áll a tesztelésre
 
 ---
-
-## Fejlesztői jegyzet
-
-Ez egy egyszerű demo API autentikáció és jogosultságkezelés nélkül. Éles környezetben mindenképpen implementáld:
-- Laravel Sanctum vagy JWT autentikációt
-- Role-based jogosultságkezelést (pl. Policy-k használatával)
-- Rate limiting-et
-- Input sanitization-t
-- Részletesebb hibakezelést és logging-ot
-
-További információkért lásd a `STEP_BY_STEP.md` fájlt.
-
----
-
-**Verzió:** 1.0.0  
-**Laravel verzió:** 11.x  
-**Utolsó frissítés:** 2025-01-15  
-**Szerző:** Blog2 Development Team
